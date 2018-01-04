@@ -10,6 +10,7 @@ namespace BotTrader
     {
         static void Main(string[] args)
         {
+
         }
     }
 }

@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
 using BotTrader.Model;
 
 namespace BotTrader.Controller
@@ -11,15 +8,29 @@ namespace BotTrader.Controller
     {
         public void Process()
         {
+            while (true)
+            {
+                Service.Service service = new Service.Service();
+                DAO.DAO dao = new DAO.DAO();
 
-            Service.Service service = new Service.Service();
-            DAO.DAO dao = new DAO.DAO();
+                ResultGetLastBuyValue resultGetLastBuyValue = new ResultGetLastBuyValue
+                {
+                    value = dao.GetLastTradeValue(Trade.Buy)
+                };
 
-            ResultRequestBitCoinTrade resultRequestBitCoinTrade = service.GetTicker();
-            ResultGetLastPurchaseValue resultGetLastPurchaseValue = dao.GetLastPurchaseValue();
+                ResultGetLastSaleValue resultGetLastSaleValue = new ResultGetLastSaleValue
+                {
+                    value = dao.GetLastTradeValue(Trade.Sale)
+                };
 
-            service.Think(resultRequestBitCoinTrade, resultGetLastPurchaseValue);
+                ResultRequestBitCoinTrade resultRequestBitCoinTrade = service.GetTicker();
 
+                service.Think(resultRequestBitCoinTrade, resultGetLastBuyValue, resultGetLastSaleValue);
+
+                Console.WriteLine(DateTime.UtcNow.ToLocalTime() + " fim \n\n");
+
+                Thread.Sleep(Convert.ToInt32(TimeSpan.FromSeconds(10).TotalMilliseconds));
+            }
         }
     }
 }

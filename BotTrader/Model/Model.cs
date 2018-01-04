@@ -24,8 +24,18 @@ namespace BotTrader.Model
         public Data data { get; set; }
     }
 
-    public class ResultGetLastPurchaseValue
+    public class ResultGetLastTradeValue
     {
         public decimal value { get; set; }
+    }
+
+    public class ResultGetLastBuyValue : ResultGetLastTradeValue { }
+
+    public class ResultGetLastSaleValue : ResultGetLastTradeValue { }
+
+    public enum Trade
+    {
+        Buy,
+        Sale
     }
 }

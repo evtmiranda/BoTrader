@@ -4,7 +4,7 @@
     {
         static void Main(string[] args)
         {
-            new Controller.Controller().Process();
+            new Controller.Controller().Processar();
         }
     }
 }

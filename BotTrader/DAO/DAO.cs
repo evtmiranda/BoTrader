@@ -16,26 +16,26 @@ namespace BotTrader.DAO
             SqlConn = new SqlConnection(ConfigurationManager.ConnectionStrings["BotTrader"].ToString());
         }
 
-        internal decimal GetLastTradeValue(Trade trade)
+        internal double ConsultarUltimoValorTrade(TipoTrade tipoTrade)
         {
-            decimal resultGetLastTradeValue = 0;
+            double resultUltimoValorTrade = 0;
 
             string script = null;
 
-            switch (trade)
+            switch (tipoTrade)
             {
-                case Trade.Buy:
+                case TipoTrade.Compra:
                     script = @"
                         SELECT TOP (1)
-                            vlr_buy
-                        FROM dbo.tab_trade_buy
+                            vlr_compra
+                        FROM dbo.tab_trade_compra
                         ORDER BY dat_registro DESC";
                     break;
-                case Trade.Sale:
+                case TipoTrade.Venda:
                     script = @"
                         SELECT TOP (1)
-                            vlr_sale
-                        FROM dbo.tab_trade_sale
+                            vlr_venda
+                        FROM dbo.tab_trade_venda
                         ORDER BY dat_registro DESC";
                     break;
             }
@@ -50,9 +50,9 @@ namespace BotTrader.DAO
 
             try
             {
-                resultGetLastTradeValue = Convert.ToDecimal(SqlComm.ExecuteScalar());
+                resultUltimoValorTrade = Convert.ToDouble(SqlComm.ExecuteScalar());
 
-                return resultGetLastTradeValue;
+                return resultUltimoValorTrade;
             }
             catch (Exception ex)
             {
@@ -91,16 +91,29 @@ namespace BotTrader.DAO
                                 VALUES
                                 (
                                     @stack_trace,
-                                    message,
+                                    @message
                                 )";
 
-                SqlConn.Open();
+                if(SqlConn.State == ConnectionState.Closed)
+                {
+                    SqlConn.Open();
+                }
 
                 SqlComm.CommandType = CommandType.Text;
                 SqlComm.CommandText = script;
 
                 SqlComm.Parameters.Clear();
-                SqlComm.Parameters.AddWithValue("@stack_trace", ex.StackTrace);
+
+                if(ex.StackTrace == null)
+                {
+                    SqlComm.Parameters.AddWithValue("@stack_trace", DBNull.Value);
+                }
+                else
+                {
+                    SqlComm.Parameters.AddWithValue("@stack_trace", ex.StackTrace);
+                }
+                
+                
                 SqlComm.Parameters.AddWithValue("@message", ex.Message);
 
                 SqlComm.ExecuteNonQuery();

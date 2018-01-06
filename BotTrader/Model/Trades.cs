@@ -35,4 +35,27 @@ namespace BotTrader.Model.Trades
         public object message { get; set; }
         public Data data { get; set; }
     }
+
+    /// <summary>
+    /// Dados para consulta dos dados de trade na API da bitcointrade
+    /// </summary>
+    public class DadosConsultaTrade
+    {
+        /// <summary>
+        /// Formato: yyyy-MM-ddThh:mm:ss-03:00
+        /// </summary>
+        public string DataInicial { get; set; }
+
+        /// <summary>
+        /// Formato: yyyy-MM-ddThh:mm:ss-03:00
+        /// </summary>
+        public string DataFinal { get; set; }
+        public int TamanhoPagina { get; set; }
+        public int NumeroPagina { get; set; }
+    }
+
+    public class DataUltimoProcessamento
+    {
+        public string data { get; set; }
+    }
 }

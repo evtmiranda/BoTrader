@@ -1,4 +1,5 @@
-﻿using BotTrader.DAO;
+﻿using System;
+using BotTrader.DAO;
 using BotTrader.Model.Orders;
 using BotTrader.Model.Ticker;
 using BotTrader.Model.Trades;
@@ -10,6 +11,18 @@ namespace BotTrader.Service
         Orders listaOrder;
         Trades listaTrade;
         Ticker ticker;
+        DadosConsultaTrade dadosConsultaTrade;
+
+        OrdersDAO ordersDAO;
+        TradesDAO tradesDAO;
+        TickerDAO tickerDAO;
+
+        internal Service()
+        {
+            ordersDAO = new OrdersDAO();
+            tradesDAO = new TradesDAO();
+            tickerDAO = new TickerDAO();
+        }
 
         /// <summary>
         /// Consulta as informações de trade e insere no banco de dados
@@ -30,8 +43,16 @@ namespace BotTrader.Service
             Comunicacao.EscreverNaTela("consultando as ordens");
             listaOrder = reqRest.GetOrders();
 
+            dadosConsultaTrade = new DadosConsultaTrade
+            {
+                DataInicial = tradesDAO.ConsultarUltimaDataProcessamento(),
+                DataFinal = DateTime.Now.ToString("yyyy-MM-ddThh:mm:ss-03:00"),
+                NumeroPagina = 1,
+                TamanhoPagina = int.MaxValue
+            };
+
             Comunicacao.EscreverNaTela("consultando os trades");
-            listaTrade = reqRest.GetTrades();
+            listaTrade = reqRest.GetTrades(dadosConsultaTrade);
 
             Comunicacao.EscreverNaTela("consultando o ticker");
             ticker = reqRest.GetTicker();
@@ -42,7 +63,7 @@ namespace BotTrader.Service
             if(listaOrder != null)
             {
                 Comunicacao.EscreverNaTela("inserindo as ordens");
-                new OrdersDAO().Inserir(listaOrder);
+                ordersDAO.Inserir(listaOrder);
             }
             else
             {
@@ -52,7 +73,7 @@ namespace BotTrader.Service
             if (listaTrade != null)
             {
                 Comunicacao.EscreverNaTela("inserindo os trades");
-                new TradesDAO().Inserir(listaTrade);
+                tradesDAO.Inserir(listaTrade);
             }
             else
             {
@@ -62,7 +83,7 @@ namespace BotTrader.Service
             if (ticker != null)
             {
                 Comunicacao.EscreverNaTela("inserindo o ticker");
-                new TickerDAO().Inserir(ticker);
+                tickerDAO.Inserir(ticker);
             }
             else
             {
@@ -70,14 +91,7 @@ namespace BotTrader.Service
             }
         }
 
-        /// <summary>
-        /// Executa diversas operações para identificar se é um bom momento para comprar ou vender. Se for um bom bomento,
-        /// enviará mensagem pelos canais configurados
-        /// </summary>
-        internal void Pensar()
-        {
 
-        }
 
     }
 }

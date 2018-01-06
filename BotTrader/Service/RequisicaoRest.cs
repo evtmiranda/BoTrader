@@ -67,7 +67,7 @@ namespace BotTrader.Service
 
         }
 
-        public Trades GetTrades()
+        public Trades GetTrades(DadosConsultaTrade dadosConsultaTrade)
         {
             try
             {
@@ -75,10 +75,10 @@ namespace BotTrader.Service
 
                 var client = new RestClient("https://api.bitcointrade.com.br/");
                 var request = new RestRequest("v1/public/BTC/trades", Method.GET);
-                request.AddQueryParameter("start_time", "2018-01-04T00:00:00-03:00");
-                request.AddQueryParameter("end_time", "2018-01-04T23:59:59-03:00");
-                request.AddQueryParameter("page_size", "10000");
-                request.AddQueryParameter("current_page", "1");
+                request.AddQueryParameter("start_time", dadosConsultaTrade.DataInicial);
+                request.AddQueryParameter("end_time", dadosConsultaTrade.DataFinal);
+                request.AddQueryParameter("page_size", dadosConsultaTrade.TamanhoPagina.ToString());
+                request.AddQueryParameter("current_page", dadosConsultaTrade.NumeroPagina.ToString());
 
                 var queryResult = client.Execute(request);
 

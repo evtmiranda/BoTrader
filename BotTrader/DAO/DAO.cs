@@ -53,6 +53,31 @@ namespace BotTrader.DAO
             }
         }
 
+        internal SqlDataReader Consultar(string script, SqlParameter[] arrayParametros = null)
+        {
+            try
+            {
+                if (SqlConn.State == ConnectionState.Closed)
+                    SqlConn.Open();
+
+                if (arrayParametros != null)
+                {
+                    SqlComm.Parameters.Clear();
+                    SqlComm.Parameters.AddRange(arrayParametros);
+                }
+
+                SqlComm.CommandText = script;
+
+                return SqlComm.ExecuteReader();
+            }
+            catch (Exception ex)
+            {
+                LogDAO.Inserir(ex);
+                Comunicacao.EscreverNaTela(ex.Message);
+                return null;
+            }
+        }
+
         ~DAO(){
             if(SqlConn != null)
             {

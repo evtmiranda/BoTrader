@@ -92,6 +92,7 @@
     <Compile Include="Service\Matematica.cs" />
     <Compile Include="Service\Comunicacao.cs" />
     <Compile Include="Service\RequisicaoRest.cs" />
+    <Compile Include="Service\Serializacao.cs" />
     <Compile Include="Service\Service.cs" />
   </ItemGroup>
   <ItemGroup>

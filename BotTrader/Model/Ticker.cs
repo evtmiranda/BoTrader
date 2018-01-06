@@ -4,30 +4,45 @@ namespace BotTrader.Model.Ticker
 {
     public class Data
     {
-        public double high { get; set; }
-        public double low { get; set; }
-        public double volume { get; set; }
+        /// <summary>
+        /// Maior valor de negociação nas últimas 24 horas
+        /// </summary>
+        public decimal high { get; set; }
+
+        /// <summary>
+        /// Menor valor de negociação nas últimas 24 horas
+        /// </summary>
+        public decimal low { get; set; }
+
+        /// <summary>
+        /// Quantidade negociada nas últimas 24 horas para a cripto moeda informada
+        /// </summary>
+        public decimal volume { get; set; }
+
+        /// <summary>
+        /// Quantidade de trades realizados nas últimas 24 horas para a cripto moeda informada
+        /// </summary>
         public int trades_quantity { get; set; }
 
         /// <summary>
         /// Valor do último trade, seja ele de compra ou de venda
         /// </summary>
-        public double last { get; set; }
+        public decimal last { get; set; }
 
         /// <summary>
         /// Melhor oferta de compra, ou seja, valor pelo qual se pode vender
         /// </summary>
-        public double buy { get; set; }
+        public decimal buy { get; set; }
 
         /// <summary>
         /// Melhor oferta de venda, ou seja, valor pelo qual se pode comprar
         /// </summary>
-        public double sell { get; set; }
+        public decimal sell { get; set; }
         public DateTime date { get; set; }
     }
 
     /// <summary>
-    /// Resumo das últimas 24 horas de negociações
+    /// Resumo das últimas 24 horas de negociação
     /// </summary>
     public class Ticker
     {

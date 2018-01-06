@@ -4,16 +4,16 @@ namespace BotTrader.Model.Orders
 {
     public class Bid
     {
-        public double unit_price { get; set; }
+        public decimal unit_price { get; set; }
         public string code { get; set; }
-        public double amount { get; set; }
+        public decimal amount { get; set; }
     }
 
     public class Ask
     {
-        public double unit_price { get; set; }
+        public decimal unit_price { get; set; }
         public string code { get; set; }
-        public double amount { get; set; }
+        public decimal amount { get; set; }
     }
 
     public class Data

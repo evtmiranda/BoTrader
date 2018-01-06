@@ -8,18 +8,23 @@ namespace BotTrader.Service
 {
     internal class Comunicacao
     {
-        private void EnviarMensagem(string message)
+        internal static void EnviarMensagem(string message)
         {
             string messageLocal = DateTime.UtcNow.ToLocalTime() + " " + message;
 
             Console.WriteLine(messageLocal);
             EnviarMensagemSlack(messageLocal);
-            //EnviarMensagemTelegram();
         }
 
-        private void EnviarMensagemSlack(string message)
+        internal static void EscreverNaTela(string mensagem)
         {
-            string caminhoArquivoPython = ConfigurationManager.AppSettings.Get("pathArchivePython");
+            string mensagemLocal = DateTime.UtcNow.ToLocalTime() + " " + mensagem;
+            Console.WriteLine(mensagemLocal);
+        }
+
+        private static void EnviarMensagemSlack(string message)
+        {
+            string caminhoArquivoPython = ConfigurationManager.AppSettings.Get("CaminhoArquivoBotPy");
             ProcessStartInfo processInfo = new ProcessStartInfo
             {
                 WindowStyle = ProcessWindowStyle.Hidden,
@@ -32,7 +37,7 @@ namespace BotTrader.Service
             Process.Start(processInfo);
         }
 
-        private async Task EnviarMensagemTelegram()
+        private static async Task EnviarMensagemTelegram()
         {
             //TODO: Repositório com exemplos em C#: https://github.com/TelegramBots/telegram.bot.examples
 
@@ -41,10 +46,5 @@ namespace BotTrader.Service
             Console.WriteLine($"Hello! My name is {me.FirstName}");
         }
 
-        internal void EscreverNaTela(string mensagem)
-        {
-            string mensagemLocal = DateTime.UtcNow.ToLocalTime() + " " + mensagem;
-            Console.WriteLine(mensagemLocal);
-        }
     }
 }

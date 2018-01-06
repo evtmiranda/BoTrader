@@ -4,10 +4,10 @@ namespace BotTrader.Service
 {
     internal class Matematica
     {
-        private double CalcularVariacao(double a, double b)
+        private decimal CalcularVariacao(decimal a, decimal b)
         {
-            double difference = a - b;
-            double variation = difference / a;
+            decimal difference = a - b;
+            decimal variation = difference / a;
             return variation * 100;
         }
     }

@@ -79,6 +79,10 @@
   <ItemGroup>
     <Compile Include="Controller\Controller.cs" />
     <Compile Include="DAO\DAO.cs" />
+    <Compile Include="DAO\LogDAO.cs" />
+    <Compile Include="DAO\OrdersDAO.cs" />
+    <Compile Include="DAO\TickerDAO.cs" />
+    <Compile Include="DAO\TradesDAO.cs" />
     <Compile Include="Model\Model.cs" />
     <Compile Include="Model\Orders.cs" />
     <Compile Include="Model\Ticker.cs" />

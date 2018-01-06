@@ -14,8 +14,8 @@ namespace BotTrader.Model.Trades
     public class Trade
     {
         public string type { get; set; }
-        public double amount { get; set; }
-        public double unit_price { get; set; }
+        public decimal amount { get; set; }
+        public decimal unit_price { get; set; }
         public string active_order_code { get; set; }
         public string passive_order_code { get; set; }
         public DateTime date { get; set; }

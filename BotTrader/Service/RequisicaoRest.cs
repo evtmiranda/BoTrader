@@ -1,8 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using BotTrader.DAO;
 using BotTrader.Model.Orders;
 using BotTrader.Model.Ticker;
 using BotTrader.Model.Trades;
+using Newtonsoft.Json;
 using RestSharp;
 
 namespace BotTrader.Service
@@ -11,61 +14,89 @@ namespace BotTrader.Service
     {
         public Ticker GetTicker()
         {
-            Ticker Ticker;
-
-            var client = new RestClient("https://api.bitcointrade.com.br/");
-            var request = new RestRequest("v1/public/BTC/ticker", Method.GET);
-            var queryResult = client.Execute<List<Ticker>>(request).Data;
-
-            if (queryResult == null)
+            try
             {
+                Ticker ticker;
+
+                var client = new RestClient("https://api.bitcointrade.com.br/");
+                var request = new RestRequest("v1/public/BTC/ticker", Method.GET);
+                var queryResult = client.Execute(request);
+
+                if (queryResult == null)
+                {
+                    return null;
+                }
+
+                ticker = JsonConvert.DeserializeObject<Ticker>(queryResult.Content);
+
+                return ticker;
+            }
+            catch (Exception ex)
+            {
+                Comunicacao.EscreverNaTela("Ocorreu um erro ao consultar o ticker: " + ex.Message);
+                new LogDAO().Inserir(ex);
                 return null;
             }
-
-            Ticker = queryResult.First();
-
-            return Ticker;
         }
 
         public Orders GetOrders()
         {
-            Orders orders;
-
-            var client = new RestClient("https://api.bitcointrade.com.br/");
-            var request = new RestRequest("v1/public/BTC/orders", Method.GET);
-            var queryResult = client.Execute<List<Orders>>(request).Data;
-
-            if (queryResult == null)
+            try
             {
+                Orders orders;
+
+                var client = new RestClient("https://api.bitcointrade.com.br/");
+                var request = new RestRequest("v1/public/BTC/orders", Method.GET);
+                var queryResult = client.Execute(request);
+
+                if (queryResult == null)
+                {
+                    return null;
+                }
+
+                orders = JsonConvert.DeserializeObject<Orders>(queryResult.Content);
+
+                return orders;
+            }
+            catch (Exception ex)
+            {
+                Comunicacao.EscreverNaTela("Ocorreu um erro ao consultar as ordens: " + ex.Message);
+                new LogDAO().Inserir(ex);
                 return null;
             }
 
-            orders = queryResult.First();
-
-            return orders;
         }
 
         public Trades GetTrades()
         {
-            Trades trades;
-
-            var client = new RestClient("https://api.bitcointrade.com.br/");
-            var request = new RestRequest("v1/public/BTC/trades", Method.GET);
-            request.AddQueryParameter("start_time", "2018-01-04T00:00:00-03:00");
-            request.AddQueryParameter("end_time", "2018-01-04T23:59:59-03:00");
-            request.AddQueryParameter("page_size", "10000");
-            request.AddQueryParameter("current_page", "1");
-
-            var queryResult = client.Execute<List<Trades>>(request).Data;
-
-            if (queryResult == null)
+            try
             {
+                Trades trades;
+
+                var client = new RestClient("https://api.bitcointrade.com.br/");
+                var request = new RestRequest("v1/public/BTC/trades", Method.GET);
+                request.AddQueryParameter("start_time", "2018-01-04T00:00:00-03:00");
+                request.AddQueryParameter("end_time", "2018-01-04T23:59:59-03:00");
+                request.AddQueryParameter("page_size", "10000");
+                request.AddQueryParameter("current_page", "1");
+
+                var queryResult = client.Execute(request);
+
+                if (queryResult == null)
+                {
+                    return null;
+                }
+
+                trades = JsonConvert.DeserializeObject<Trades>(queryResult.Content);
+
+                return trades;
+            }
+            catch (Exception ex)
+            {
+                Comunicacao.EscreverNaTela("Ocorreu um erro ao consultar os trades: " + ex.Message);
+                new LogDAO().Inserir(ex);
                 return null;
             }
-
-            trades = queryResult.First();
-
-            return trades;
         }
     }
 }

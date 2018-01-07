@@ -58,4 +58,22 @@ namespace BotTrader.Model.Trades
     {
         public string data { get; set; }
     }
+
+    public class DadosConsultaTradeBD
+    {
+        /// <summary>
+        /// buy ou sell
+        /// </summary>
+        public string Tipo { get; set; }
+
+        /// <summary>
+        /// Formato: yyyyMMdd HH:mm:ss
+        /// </summary>
+        public string DataInicial { get; set; }
+
+        /// <summary>
+        /// Formato: yyyyMMdd HH:mm:ss
+        /// </summary>
+        public string DataFinal { get; set; }
+    }
 }

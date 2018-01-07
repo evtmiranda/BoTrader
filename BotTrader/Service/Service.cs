@@ -17,11 +17,15 @@ namespace BotTrader.Service
         TradesDAO tradesDAO;
         TickerDAO tickerDAO;
 
+        Matematica matematica;
+
         internal Service()
         {
             ordersDAO = new OrdersDAO();
             tradesDAO = new TradesDAO();
             tickerDAO = new TickerDAO();
+
+            matematica = new Matematica();
         }
 
         /// <summary>
@@ -34,6 +38,14 @@ namespace BotTrader.Service
 
             Comunicacao.EscreverNaTela("inserindo as informações de trade no banco de dados");
             InserirNoBancoInformacoesBitCoinTrade();
+        }
+
+        internal void GerarInsightEAlerta()
+        {
+
+
+            matematica.AnalisarCompra();
+            matematica.AnalisarVenda();
         }
 
         private void ConsultarInformacoesBitCoinTrade()
@@ -90,7 +102,6 @@ namespace BotTrader.Service
                 Comunicacao.EscreverNaTela("o ticker está vazio, portanto os dados não serão inseridos no banco de dados");
             }
         }
-
 
 
     }

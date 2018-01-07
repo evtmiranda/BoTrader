@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Linq;
 using BotTrader.Model.Trades;
 using BotTrader.Service;
 using Newtonsoft.Json;
@@ -60,6 +61,45 @@ namespace BotTrader.DAO
 
         }
 
+        /// <summary>
+        /// Consulta os trades de acordo com os filtros enviados e retorna uma lista de trades
+        /// </summary>
+        /// <param name="dadosConsultaTradeBD">Filtros para consulta de trades</param>
+        internal List<Trade> Consultar(DadosConsultaTradeBD dadosConsultaTradeBD)
+        {
+            script = @"
+                SELECT
+                    [type],
+                    amount,
+                    unit_price,
+                    active_order_code,
+                    passive_order_code,
+                    [date]
+                FROM dbo.tab_bitcoin_trade_trade
+                WHERE [type] = @type
+                AND [date] BETWEEN @data_inicial AND @data_final
+                ORDER BY cod_bitcoin_trade_trade DESC";
+
+            arrayParametros = new SqlParameter[]
+            {
+                new SqlParameter("@type", dadosConsultaTradeBD.Tipo),
+                new SqlParameter("@data_inicial", dadosConsultaTradeBD.DataInicial),
+                new SqlParameter("@data_final", dadosConsultaTradeBD.DataFinal)
+            };
+
+            dataReader = dao.Consultar(script, arrayParametros);
+
+            var r = new Serializacao().Serializar(dataReader);
+            //string json = JsonConvert.SerializeObject(r, Formatting.None).Replace("[", "").Replace("]", "");
+            string json = JsonConvert.SerializeObject(r, Formatting.None);
+
+            List<Trade> trades = JsonConvert.DeserializeObject<List<Trade>>(json);
+
+            dataReader.Close();
+
+            return trades;
+        }
+
         internal string ConsultarUltimaDataProcessamento()
         {
             script = @"SELECT COALESCE(FORMAT(MAX(date), 'yyyy-MM-ddThh:mm:ss-03:00'), '2017-01-01T00:00:00-03:00') as data FROM dbo.tab_bitcoin_trade_trade;";
@@ -67,13 +107,15 @@ namespace BotTrader.DAO
             dataReader = dao.Consultar(script);
 
             var r = new Serializacao().Serializar(dataReader);
-            string json = JsonConvert.SerializeObject(r, Formatting.None).Replace("[","").Replace("]","");
+            string json = JsonConvert.SerializeObject(r, Formatting.None);
 
-            DataUltimoProcessamento maiorData = JsonConvert.DeserializeObject<DataUltimoProcessamento>(json);
+            DataUltimoProcessamento maiorData = JsonConvert.DeserializeObject<List<DataUltimoProcessamento>>(json).First();
 
             dataReader.Close();
 
             return maiorData.data;
         }
+
+
     }
 }

@@ -1,0 +1,15 @@
+quando comprar?
+
+boa notícia: quando o valor para compra estiver em uma crescente continua e muita gente estiver comprando.
+
+boa notícia: quando houver uma queda continua e voltar a subir.
+
+boa notícia: quando o valor para compra estiver 0,009% abaixo do valor da última venda.
+
+alerta: quando a quantidade de compra estiver 20% acima da média.
+
+quando vender?
+
+boa notícia: quando o valor para venda estiver 0,009% acima do valor da última compra.
+
+alerta: quando a quantidade de venda estiver 20% acima da média.

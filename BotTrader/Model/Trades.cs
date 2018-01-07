@@ -60,6 +60,14 @@ namespace BotTrader.Model.Trades
         public string data { get; set; }
     }
 
+    public class DadosTipoUltimaNegociacao
+    {
+        /// <summary>
+        /// buy ou sell
+        /// </summary>
+        public string TipoUltimaNegociacao { get; set; }
+    }
+
     public class DadosUltimoValorVenda
     {
         public decimal vlr_venda { get; set; }
@@ -72,17 +80,51 @@ namespace BotTrader.Model.Trades
 
     public class DadosAnaliseCompra
     {
+        /// <summary>
+        /// Indica o percentual médio de crescimento do valor da compra nas últimas 3 horas.
+        /// Se o percentual for >= 1%, se torna interessante comprar, pois o valor está em uma crescente continua.
+        /// </summary>
         public decimal PercentualMedioCrescimentoValorCompraUltimas3Horas { get; set; }
+
+        /// <summary>
+        /// Indica em percentual o quanto o valor para compra está maior que o valor da última venda efetuada.
+        /// Se o percentual for menor ou igual a -0,99 se torna interessante comprar, pois o valor para compra está menor que o valor da última venda.
+        /// </summary>
         public decimal PercentualCrescimentoValorCompraEmRelacaoValorUltimaVenda { get; set; }
+
+        /// <summary>
+        /// Indica o percentual de crescimento da quantidade de compras da última hora em relação a hora anterior.
+        /// </summary>
         public decimal PercentualCrescimentoQtdComprasUltimaHora { get; set; }
+
+        /// <summary>
+        /// Indica o percentual de crescimento da quantidade de trades(compra e venda) da última hora em relação a hora anterior.
+        /// </summary>
         public decimal PercentualCrescimentoQtdTradesUltimaHora { get; set; }
+
+        public decimal ValorUltimaCompra { get; set; }
+        public decimal ValorUltimaVenda { get; set; }
     }
 
     public class DadosAnaliseVenda
     {
+        /// <summary>
+        /// Indica o percentual de ganho na venda, comparando o valor de venda atual com o valor da última compra efetuada.
+        /// </summary>
         public decimal PercentualGanhoVenda { get; set; }
+
+        /// <summary>
+        /// Indica o percentual de crescimento da quantidade de vendas da última hora em relação a hora anterior.
+        /// </summary>
         public decimal PercentualCrescimentoQtdVendasUltimaHora { get; set; }
+
+        /// <summary>
+        /// Indica o percentual de crescimento da quantidade de trades(compra e venda) da última hora em relação a hora anterior.
+        /// </summary>
         public decimal PercentualCrescimentoQtdTradesUltimaHora { get; set; }
+
+        public decimal ValorUltimaCompra { get; set; }
+        public decimal ValorUltimaVenda { get; set; }
     }
 
     public class DadosConsultaTradeBD

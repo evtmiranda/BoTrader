@@ -41,11 +41,13 @@ namespace BotTrader.Controller
                 Comunicacao.EscreverNaTela("iniciando a busca por insights e alertas");
                 service.GerarInsightEAlerta();
 
-                Comunicacao.EscreverNaTela(string.Format("aplicação em pausa por {0} segundos", Convert.ToInt16(ConfigurationManager.AppSettings.Get("SegundosPausaPrograma"))));
+                Comunicacao.EscreverNaTela(
+                    string.Format("aplicação em pausa por {0} segundos", 
+                    Convert.ToInt16(ConfigurationManager.AppSettings.Get("SegundosPausaProgramaInsightEAlerta"))));
 
                 Thread.Sleep(Convert.ToInt32(
                     TimeSpan.FromSeconds(
-                        Convert.ToInt16(ConfigurationManager.AppSettings.Get("SegundosPausaPrograma")
+                        Convert.ToInt16(ConfigurationManager.AppSettings.Get("SegundosPausaProgramaInsightEAlerta")
                         )).TotalMilliseconds));
             }
         }

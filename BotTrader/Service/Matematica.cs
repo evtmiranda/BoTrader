@@ -30,20 +30,19 @@ namespace BotTrader.Service
             decimal percentualCrescimentoValorCompraEmRelacaoValorUltimaVenda = CompararValorCompraXValorUltimaVenda();
             decimal percentualCrescimentoQtdComprasUltimaHora = CalcularCrescimentoQuantidadeCompraUltimaHora();
             decimal percentualCrescimentoQtdTradesUltimaHora = CalcularCrescimentoQtdTradesUltimaHora();
+            decimal valorUltimaCompra = tradesDAO.ConsultarUltimoValorCompra().vlr_compra;
+            decimal valorUltimaVenda = tradesDAO.ConsultarUltimoValorVenda().vlr_venda;
 
             return new DadosAnaliseCompra()
             {
                 PercentualMedioCrescimentoValorCompraUltimas3Horas = percentualMedioCrescimentoValorCompraUltimas3Horas,
                 PercentualCrescimentoQtdComprasUltimaHora = percentualCrescimentoQtdComprasUltimaHora,
                 PercentualCrescimentoValorCompraEmRelacaoValorUltimaVenda = percentualCrescimentoValorCompraEmRelacaoValorUltimaVenda,
-                PercentualCrescimentoQtdTradesUltimaHora = percentualCrescimentoQtdTradesUltimaHora
+                PercentualCrescimentoQtdTradesUltimaHora = percentualCrescimentoQtdTradesUltimaHora,
+                ValorUltimaCompra = valorUltimaCompra,
+                ValorUltimaVenda = valorUltimaVenda
             };
-
-            //TODO: implementar os métodos abaixo
-            //AnalisarSeHouveQuedaContinuaEVoltouASubir();
         }
-
-
 
         /// <summary>
         /// Calcula o percentual médio de crescimento do valor de compra nas últimas 3 horas
@@ -53,7 +52,7 @@ namespace BotTrader.Service
             DadosConsultaTradeBD dadosConsultaTradeBD = new DadosConsultaTradeBD()
             {
                 Tipo = "buy",
-                DataInicial = DateTime.Now.AddHours(-3).ToString("yyyyMMdd HH:mm:ss"),
+                DataInicial = DateTime.Now.AddHours(-3).ToString("yyyyMMdd HH:00:00"),
                 DataFinal = DateTime.Now.ToString("yyyyMMdd HH:mm:ss"),
                 NomeCampoOrdenacao = "cod_bitcoin_trade_trade",
                 TipoOrdenacao = "ASC"
@@ -80,7 +79,7 @@ namespace BotTrader.Service
                 listaVariacao.Add(variacaoComparacaoUltimoTrade);
             }
 
-            decimal percentualMedioCrescimentoValorCompra = listaVariacao.Average();
+            decimal percentualMedioCrescimentoValorCompra = (listaVariacao.Sum() * 100 / listaVariacao.Count) * 100;
 
             return percentualMedioCrescimentoValorCompra;
         }
@@ -106,14 +105,14 @@ namespace BotTrader.Service
                 TipoOrdenacao = "DESC"
             };
 
-            Ticker ticker = tickerDAO.Consultar(dadosConsultaTickerBD).First();
+            Model.Ticker.Data ticker = tickerDAO.Consultar(dadosConsultaTickerBD).First();
 
             DadosUltimoValorVenda ultimoValorVenda = tradesDAO.ConsultarUltimoValorVenda();
 
             if (ultimoValorVenda == null)
                 return Convert.ToDecimal(0);
 
-            decimal valorCompraAtual = ticker.data.sell;
+            decimal valorCompraAtual = ticker.sell;
             decimal valorUltimaVenda = ultimoValorVenda.vlr_venda;
 
             decimal diferencaValorCompra = valorCompraAtual - valorUltimaVenda;
@@ -133,7 +132,7 @@ namespace BotTrader.Service
             DadosConsultaTradeBD dadosConsultaTradeBD = new DadosConsultaTradeBD()
             {
                 Tipo = "buy",
-                DataInicial = DateTime.Now.AddHours(qtdHorasAnalise).ToString("yyyyMMdd HH:mm:ss"),
+                DataInicial = DateTime.Now.AddHours(qtdHorasAnalise).ToString("yyyyMMdd HH:00:00"),
                 DataFinal = DateTime.Now.ToString("yyyyMMdd HH:mm:ss"),
                 NomeCampoOrdenacao = "cod_bitcoin_trade_trade",
                 TipoOrdenacao = "ASC"
@@ -162,7 +161,7 @@ namespace BotTrader.Service
 
             DadosConsultaTradeBD dadosConsultaTradeBD = new DadosConsultaTradeBD()
             {
-                DataInicial = DateTime.Now.AddHours(qtdHorasAnalise).ToString("yyyyMMdd HH:mm:ss"),
+                DataInicial = DateTime.Now.AddHours(qtdHorasAnalise).ToString("yyyyMMdd HH:00:00"),
                 DataFinal = DateTime.Now.ToString("yyyyMMdd HH:mm:ss"),
                 NomeCampoOrdenacao = "cod_bitcoin_trade_trade",
                 TipoOrdenacao = "ASC"
@@ -196,12 +195,16 @@ namespace BotTrader.Service
             decimal percentualGanhoVenda = CompararValorVendaXValorUltimaCompra();
             decimal percentualCrescimentoQtdVendas = CalcularCrescimentoQuantidadeVendaUltimaHora();
             decimal percentualCrescimentoQtdTradesUltimaHora = CalcularCrescimentoQtdTradesUltimaHora();
+            decimal valorUltimaCompra = tradesDAO.ConsultarUltimoValorCompra().vlr_compra;
+            decimal valorUltimaVenda = tradesDAO.ConsultarUltimoValorVenda().vlr_venda;
 
             return new DadosAnaliseVenda()
             {
                 PercentualCrescimentoQtdVendasUltimaHora = percentualCrescimentoQtdVendas,
                 PercentualGanhoVenda = percentualGanhoVenda,
-                PercentualCrescimentoQtdTradesUltimaHora = percentualCrescimentoQtdTradesUltimaHora
+                PercentualCrescimentoQtdTradesUltimaHora = percentualCrescimentoQtdTradesUltimaHora,
+                ValorUltimaCompra = valorUltimaCompra,
+                ValorUltimaVenda = valorUltimaVenda
             };
         }
 
@@ -219,14 +222,14 @@ namespace BotTrader.Service
                 TipoOrdenacao = "DESC"
             };
 
-            Ticker ticker = tickerDAO.Consultar(dadosConsultaTickerBD).First();
+            Model.Ticker.Data ticker = tickerDAO.Consultar(dadosConsultaTickerBD).First();
 
             DadosUltimoValorCompra ultimoValorCompra = tradesDAO.ConsultarUltimoValorCompra();
 
             if(ultimoValorCompra == null)
                 return Convert.ToDecimal(0);
 
-            decimal valorVendaAtual = ticker.data.buy;
+            decimal valorVendaAtual = ticker.buy;
             decimal valorUltimaCompra = ultimoValorCompra.vlr_compra;
 
             decimal diferencaValorVenda = valorVendaAtual - valorUltimaCompra;
@@ -246,7 +249,7 @@ namespace BotTrader.Service
             DadosConsultaTradeBD dadosConsultaTradeBD = new DadosConsultaTradeBD()
             {
                 Tipo = "sell",
-                DataInicial = DateTime.Now.AddHours(qtdHorasAnalise).ToString("yyyyMMdd HH:mm:ss"),
+                DataInicial = DateTime.Now.AddHours(qtdHorasAnalise).ToString("yyyyMMdd HH:00:00"),
                 DataFinal = DateTime.Now.ToString("yyyyMMdd HH:mm:ss"),
                 NomeCampoOrdenacao = "cod_bitcoin_trade_trade",
                 TipoOrdenacao = "ASC"
@@ -261,7 +264,7 @@ namespace BotTrader.Service
             .Select(grp => grp.ToList())
             .ToList();
 
-            int indiceInicial = listaTradeQtdVenda.Count == (qtdHorasAnalisePositivo + 1) ? qtdHorasAnalisePositivo - 1 : qtdHorasAnalisePositivo;
+            int indiceInicial = listaTradeQtdVendaAgrupada.Count == (qtdHorasAnalisePositivo + 1) ? qtdHorasAnalisePositivo - 1 : qtdHorasAnalisePositivo;
 
             decimal crescimentoQuantidadeVendaUltimaHora = (Convert.ToDecimal(listaTradeQtdVendaAgrupada[indiceInicial].Count) / Convert.ToDecimal(listaTradeQtdVendaAgrupada[indiceInicial - 1].Count)) - 1;
 

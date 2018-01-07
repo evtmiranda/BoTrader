@@ -61,6 +61,35 @@ namespace BotTrader.DAO
 
         }
 
+        public string ConsultarTipoUltimaNegociacao()
+        {
+            try
+            {
+                script = @"
+                    IF((SELECT MAX(dat_registro) FROM dbo.tab_trade_compra) > (SELECT MAX(dat_registro) FROM dbo.tab_trade_venda))
+                    BEGIN
+	                    SELECT 'buy' AS tipoUltimaNegociacao
+                    END
+                    ELSE
+                    BEGIN
+	                    SELECT 'sell' AS tipoUltimaNegociacao
+                    END";
+
+                dataReader = dao.Consultar(script);
+
+                var r = new Serializacao().Serializar(dataReader);
+                string json = JsonConvert.SerializeObject(r, Formatting.None);
+
+                DadosTipoUltimaNegociacao tipoUltimaNegociacao = JsonConvert.DeserializeObject<List<DadosTipoUltimaNegociacao>>(json).First();
+
+                return tipoUltimaNegociacao.TipoUltimaNegociacao;
+            }
+            finally
+            {
+                dataReader.Close();
+            }
+        }
+
         /// <summary>
         /// Consulta os trades de acordo com os filtros enviados e retorna uma lista de trades
         /// </summary>
@@ -69,8 +98,6 @@ namespace BotTrader.DAO
         {
             try
             {
-
-
                 script = @"
                 SELECT
                     [type],

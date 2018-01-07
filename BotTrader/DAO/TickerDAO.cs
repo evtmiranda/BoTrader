@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Linq;
 using BotTrader.Model.Ticker;
 using BotTrader.Service;
 using Newtonsoft.Json;
@@ -56,7 +57,7 @@ namespace BotTrader.DAO
             dao.Inserir(script, arrayParametros);
         }
 
-        public List<Ticker> Consultar(DadosConsultaTickerBD dadosConsultaTickerBD)
+        public List<Data> Consultar(DadosConsultaTickerBD dadosConsultaTickerBD)
         {
             try
             {
@@ -64,7 +65,6 @@ namespace BotTrader.DAO
                 {
                     script = string.Format(@"
                     SELECT TOP {0}
-	                    cod_bitcoin_trade_ticker,
 	                    high,
 	                    low,
 	                    volume,
@@ -79,7 +79,6 @@ namespace BotTrader.DAO
                 {
                     script = @"
                     SELECT
-	                    cod_bitcoin_trade_ticker,
 	                    high,
 	                    low,
 	                    volume,
@@ -108,7 +107,11 @@ namespace BotTrader.DAO
                 var r = new Serializacao().Serializar(dataReader);
                 string json = JsonConvert.SerializeObject(r, Formatting.None);
 
-                return JsonConvert.DeserializeObject<List<Ticker>>(json);
+                Data ticker = JsonConvert.DeserializeObject<List<Data>>(json).First();
+
+                List<Data> listaTicker = JsonConvert.DeserializeObject<List<Data>>(json);
+
+                return listaTicker;
             }
             finally
             {

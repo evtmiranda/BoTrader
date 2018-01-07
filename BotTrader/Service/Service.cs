@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using BotTrader.DAO;
 using BotTrader.Model.Orders;
 using BotTrader.Model.Ticker;
@@ -50,7 +51,50 @@ namespace BotTrader.Service
 
         private void AnalisarResultadoEEnviarMensagem(DadosAnaliseCompra dadosAnaliseCompra, DadosAnaliseVenda dadosAnaliseVenda)
         {
-            throw new NotImplementedException();
+            DadosConsultaTickerBD dadosConsultaTickerBD = new DadosConsultaTickerBD()
+            {
+                QtdRegistros = 1,
+                NomeCampoOrdenacao = "date",
+                TipoOrdenacao = "DESC"
+            };
+
+            Model.Ticker.Data ticker = tickerDAO.Consultar(dadosConsultaTickerBD).First();
+
+            string tipoUltimaNegociacao = tradesDAO.ConsultarTipoUltimaNegociacao();
+
+            if(tipoUltimaNegociacao == "sell")
+            {
+                //Verifica se o valor para compra está menor que o valor da última venda
+                if (dadosAnaliseCompra.PercentualCrescimentoValorCompraEmRelacaoValorUltimaVenda <= Convert.ToDecimal(-0.009))
+                {
+                    Comunicacao.EnviarMensagem(
+                        string.Format("Boa notícia: o valor para compra R${0} está {1}% menor que o valor da última venda R${2}.",
+                        ticker.sell,
+                        dadosAnaliseVenda.PercentualGanhoVenda.ToString("#.###"),
+                        dadosAnaliseVenda.ValorUltimaVenda));
+                }
+
+                if(dadosAnaliseCompra.PercentualMedioCrescimentoValorCompraUltimas3Horas >= Convert.ToDecimal(0.01))
+                {
+                    Comunicacao.EnviarMensagem(
+                        string.Format("Boa notícia: o valor para compra R${0} está em uma crescente contínua. Cresceu {1}% nas últimas 3 horas. Valor da última compra R${2}. Valor da última venda R${3}.",
+                        ticker.sell,
+                        dadosAnaliseVenda.PercentualGanhoVenda.ToString("#.###"),
+                        dadosAnaliseVenda.ValorUltimaCompra,
+                        dadosAnaliseVenda.ValorUltimaVenda));
+                }
+            }
+            else if(tipoUltimaNegociacao == "buy")
+            {
+                if (dadosAnaliseVenda.PercentualGanhoVenda >= Convert.ToDecimal(0.009))
+                {
+                    Comunicacao.EnviarMensagem(
+                    string.Format("Boa notícia: o valor para venda R${0} está {1}% maior que o valor da última compra R${2}.",
+                    ticker.buy,
+                    dadosAnaliseVenda.PercentualGanhoVenda.ToString("#.###"),
+                    dadosAnaliseVenda.ValorUltimaCompra));
+                }
+            }
         }
 
         private void ConsultarInformacoesBitCoinTrade()
@@ -77,7 +121,7 @@ namespace BotTrader.Service
 
         private void InserirNoBancoInformacoesBitCoinTrade()
         {
-            if(listaOrder != null)
+            if (listaOrder != null)
             {
                 Comunicacao.EscreverNaTela("inserindo as ordens");
                 ordersDAO.Inserir(listaOrder);

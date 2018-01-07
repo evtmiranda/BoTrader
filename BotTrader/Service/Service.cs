@@ -42,8 +42,6 @@ namespace BotTrader.Service
 
         internal void GerarInsightEAlerta()
         {
-
-
             matematica.AnalisarCompra();
             matematica.AnalisarVenda();
         }
@@ -58,7 +56,7 @@ namespace BotTrader.Service
             dadosConsultaTrade = new DadosConsultaTrade
             {
                 DataInicial = tradesDAO.ConsultarUltimaDataProcessamento(),
-                DataFinal = DateTime.Now.ToString("yyyy-MM-ddThh:mm:ss-03:00"),
+                DataFinal = DateTime.Now.ToString("yyyy-MM-ddThh:mm:ss-00:00"),
                 NumeroPagina = 1,
                 TamanhoPagina = int.MaxValue
             };

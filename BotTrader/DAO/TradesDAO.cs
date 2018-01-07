@@ -77,8 +77,21 @@ namespace BotTrader.DAO
                     [date]
                 FROM dbo.tab_bitcoin_trade_trade
                 WHERE [type] = @type
-                AND [date] BETWEEN @data_inicial AND @data_final
-                ORDER BY cod_bitcoin_trade_trade DESC";
+                AND [date] BETWEEN @data_inicial AND @data_final";
+
+            if (!string.IsNullOrEmpty(dadosConsultaTradeBD.NomeCampoOrdenacao))
+            {
+                if(!string.IsNullOrEmpty(dadosConsultaTradeBD.NomeCampoOrdenacao) && !string.IsNullOrEmpty(dadosConsultaTradeBD.TipoOrdenacao))
+                {
+                    script += string.Format(" ORDER BY {0} {1}", dadosConsultaTradeBD.NomeCampoOrdenacao, dadosConsultaTradeBD.TipoOrdenacao);
+                }
+                else
+                {
+                    script += string.Format(" ORDER BY {0}", dadosConsultaTradeBD.NomeCampoOrdenacao);
+                }
+
+                
+            }
 
             arrayParametros = new SqlParameter[]
             {
@@ -102,7 +115,7 @@ namespace BotTrader.DAO
 
         internal string ConsultarUltimaDataProcessamento()
         {
-            script = @"SELECT COALESCE(FORMAT(MAX(date), 'yyyy-MM-ddThh:mm:ss-03:00'), '2017-01-01T00:00:00-03:00') as data FROM dbo.tab_bitcoin_trade_trade;";
+            script = @"SELECT COALESCE(FORMAT(MAX(date), 'yyyy-MM-ddTHH:mm:ss-00:00'), '2017-01-01T00:00:00-00:00') as data FROM dbo.tab_bitcoin_trade_trade;";
 
             dataReader = dao.Consultar(script);
 

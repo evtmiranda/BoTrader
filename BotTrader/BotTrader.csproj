@@ -83,6 +83,7 @@
     <Compile Include="DAO\OrdersDAO.cs" />
     <Compile Include="DAO\TickerDAO.cs" />
     <Compile Include="DAO\TradesDAO.cs" />
+    <Compile Include="Model\Matematica.cs" />
     <Compile Include="Model\Model.cs" />
     <Compile Include="Model\Orders.cs" />
     <Compile Include="Model\Ticker.cs" />

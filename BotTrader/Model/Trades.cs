@@ -75,5 +75,15 @@ namespace BotTrader.Model.Trades
         /// Formato: yyyyMMdd HH:mm:ss
         /// </summary>
         public string DataFinal { get; set; }
+
+        /// <summary>
+        /// Nome do campo para ordenação de
+        /// </summary>
+        public string NomeCampoOrdenacao { get; set; }
+
+        /// <summary>
+        /// ASC ou DESC
+        /// </summary>
+        public string TipoOrdenacao { get; set; }
     }
 }

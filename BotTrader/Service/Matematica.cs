@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using BotTrader.DAO;
 using BotTrader.Model.Trades;
+using static BotTrader.Model.Matematica;
 
 namespace BotTrader.Service
 {
@@ -29,18 +31,68 @@ namespace BotTrader.Service
         /// <summary>
         /// Análise para identificar se o valor de compra está em uma crescente contínua e tem muita gente comprando
         /// </summary>
-        private void AnalisarCrescimentoValorCompraEQuantidadeCompras()
+        private ResultadoAnalisaCrescimentoValorCompraEQuantidadeCompras AnalisarCrescimentoValorCompraEQuantidadeCompras()
         {
+            #region Análise variação
+
             DadosConsultaTradeBD dadosConsultaTradeBD = new DadosConsultaTradeBD()
             {
                 Tipo = "buy",
                 DataInicial = DateTime.Now.AddHours(-3).ToString("yyyyMMdd HH:mm:ss"),
-                DataFinal = DateTime.Now.ToString("yyyyMMdd HH:mm:ss")
+                DataFinal = DateTime.Now.ToString("yyyyMMdd HH:mm:ss"),
+                NomeCampoOrdenacao = "cod_bitcoin_trade_trade",
+                TipoOrdenacao = "ASC"
             };
 
-            List<Trade> listaTrade = tradesDAO.Consultar(dadosConsultaTradeBD);
+            //Consulta os trades de compra das últimas 3 horas ordenados pelo mais recente
+            List<Trade> listaTradeVariacao = tradesDAO.Consultar(dadosConsultaTradeBD);
 
-            //TODO: Implementar a lógica de análise de crescimento e quantidade compras
+            List<decimal> listaVariacao = new List<decimal>();
+            decimal valorTradeAnterior = 0;
+            decimal variacaoComparacaoUltimoTrade = 0;
+
+            foreach (var trade in listaTradeVariacao)
+            {
+                if (valorTradeAnterior == 0)
+                {
+                    valorTradeAnterior = trade.unit_price;
+                }
+                    
+
+                variacaoComparacaoUltimoTrade = (trade.unit_price / valorTradeAnterior) - 1;
+
+                valorTradeAnterior = trade.unit_price;
+
+                listaVariacao.Add(variacaoComparacaoUltimoTrade);
+            }
+
+            decimal variacaoMedia = listaVariacao.Average();
+
+            #endregion
+
+            #region Análise qtd de compras
+
+            //Verifica se a quantidade de compras na última hora está muito acima da hora anterior
+            List<Trade> listaTradeQtdCompra = listaTradeVariacao;
+
+            var listaTradeQtdCompraAgrupada = listaTradeQtdCompra
+            .GroupBy(u => u.date.ToString("HH"))
+            .Select(grp => grp.ToList())
+            .ToList();
+
+            decimal crescimentoQtdCompra;
+
+            int indiceInicial = listaTradeQtdCompraAgrupada.Count == 4 ? 2 : 1;
+
+            crescimentoQtdCompra = (Convert.ToDecimal(listaTradeQtdCompraAgrupada[indiceInicial].Count) / Convert.ToDecimal(listaTradeQtdCompraAgrupada[indiceInicial-1].Count)) - 1;
+
+            #endregion
+
+            return new ResultadoAnalisaCrescimentoValorCompraEQuantidadeCompras()
+            {
+                CrescimentoQtdCompra = crescimentoQtdCompra,
+                VariacaoMediaCrescimento = variacaoMedia
+            };
         }
 
         /// <summary>

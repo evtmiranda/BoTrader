@@ -1,21 +1,25 @@
-﻿using System.Data.SqlClient;
+﻿using System.Collections.Generic;
+using System.Data.SqlClient;
 using BotTrader.Model.Ticker;
+using BotTrader.Service;
+using Newtonsoft.Json;
 
 namespace BotTrader.DAO
 {
 
-    internal class TickerDAO
+    public class TickerDAO
     {
         string script;
         DAO dao;
         SqlParameter[] arrayParametros;
+        SqlDataReader dataReader;
 
         public TickerDAO()
         {
             dao = new DAO();
         }
 
-        internal void Inserir(Ticker ticker)
+        public void Inserir(Ticker ticker)
         {
             script = @"
                 INSERT INTO dbo.tab_bitcoin_trade_ticker
@@ -50,6 +54,67 @@ namespace BotTrader.DAO
             };
 
             dao.Inserir(script, arrayParametros);
+        }
+
+        public List<Ticker> Consultar(DadosConsultaTickerBD dadosConsultaTickerBD)
+        {
+            try
+            {
+                if (dadosConsultaTickerBD.QtdRegistros > 0)
+                {
+                    script = string.Format(@"
+                    SELECT TOP {0}
+	                    cod_bitcoin_trade_ticker,
+	                    high,
+	                    low,
+	                    volume,
+	                    trades_quantity,
+	                    last,
+	                    buy,
+	                    sell,
+	                    date 
+                    FROM dbo.tab_bitcoin_trade_ticker", dadosConsultaTickerBD.QtdRegistros);
+                }
+                else
+                {
+                    script = @"
+                    SELECT
+	                    cod_bitcoin_trade_ticker,
+	                    high,
+	                    low,
+	                    volume,
+	                    trades_quantity,
+	                    last,
+	                    buy,
+	                    sell,
+	                    date 
+                    FROM dbo.tab_bitcoin_trade_ticker";
+                }
+
+                if (!string.IsNullOrEmpty(dadosConsultaTickerBD.NomeCampoOrdenacao))
+                {
+                    if (!string.IsNullOrEmpty(dadosConsultaTickerBD.NomeCampoOrdenacao) && !string.IsNullOrEmpty(dadosConsultaTickerBD.TipoOrdenacao))
+                    {
+                        script += string.Format(" ORDER BY {0} {1}", dadosConsultaTickerBD.NomeCampoOrdenacao, dadosConsultaTickerBD.TipoOrdenacao);
+                    }
+                    else
+                    {
+                        script += string.Format(" ORDER BY {0}", dadosConsultaTickerBD.NomeCampoOrdenacao);
+                    }
+                }
+
+                dataReader = dao.Consultar(script, arrayParametros);
+
+                var r = new Serializacao().Serializar(dataReader);
+                string json = JsonConvert.SerializeObject(r, Formatting.None);
+
+                return JsonConvert.DeserializeObject<List<Ticker>>(json);
+            }
+            finally
+            {
+                dataReader.Close();
+            }
+            
         }
     }
 }

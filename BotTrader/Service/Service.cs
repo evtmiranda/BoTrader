@@ -6,7 +6,7 @@ using BotTrader.Model.Trades;
 
 namespace BotTrader.Service
 {
-    internal class Service
+    public class Service
     {
         Orders listaOrder;
         Trades listaTrade;
@@ -19,7 +19,7 @@ namespace BotTrader.Service
 
         Matematica matematica;
 
-        internal Service()
+        public Service()
         {
             ordersDAO = new OrdersDAO();
             tradesDAO = new TradesDAO();
@@ -31,7 +31,7 @@ namespace BotTrader.Service
         /// <summary>
         /// Consulta as informações de trade e insere no banco de dados
         /// </summary>
-        internal void ProcessarInformacoesBitCoinTrade()
+        public void ProcessarInformacoesBitCoinTrade()
         {
             Comunicacao.EscreverNaTela("iniciando a consulta de informações de trade");
             ConsultarInformacoesBitCoinTrade();
@@ -40,10 +40,17 @@ namespace BotTrader.Service
             InserirNoBancoInformacoesBitCoinTrade();
         }
 
-        internal void GerarInsightEAlerta()
+        public void GerarInsightEAlerta()
         {
-            matematica.AnalisarCompra();
-            matematica.AnalisarVenda();
+            DadosAnaliseCompra dadosAnaliseCompra = matematica.AnalisarCompra();
+            DadosAnaliseVenda dadosAnaliseVenda = matematica.AnalisarVenda();
+
+            AnalisarResultadoEEnviarMensagem(dadosAnaliseCompra, dadosAnaliseVenda);
+        }
+
+        private void AnalisarResultadoEEnviarMensagem(DadosAnaliseCompra dadosAnaliseCompra, DadosAnaliseVenda dadosAnaliseVenda)
+        {
+            throw new NotImplementedException();
         }
 
         private void ConsultarInformacoesBitCoinTrade()
@@ -100,7 +107,6 @@ namespace BotTrader.Service
                 Comunicacao.EscreverNaTela("o ticker está vazio, portanto os dados não serão inseridos no banco de dados");
             }
         }
-
 
     }
 }

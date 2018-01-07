@@ -10,7 +10,7 @@ using RestSharp;
 
 namespace BotTrader.Service
 {
-    internal class RequisicaoRest
+    public class RequisicaoRest
     {
         public Ticker GetTicker()
         {

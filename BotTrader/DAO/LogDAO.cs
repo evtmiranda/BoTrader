@@ -6,18 +6,18 @@ using BotTrader.Service;
 
 namespace BotTrader.DAO
 {
-    internal class LogDAO
+    public class LogDAO
     {
         SqlConnection SqlConn { get; set; }
         SqlCommand SqlComm { get; set; }
         string script;
 
-        internal LogDAO()
+        public LogDAO()
         {
             SqlConn = new SqlConnection(ConfigurationManager.ConnectionStrings["BotTrader"].ToString());
         }
         
-        internal void Inserir(Exception ex)
+        public void Inserir(Exception ex)
         {
             try
             {

@@ -19,7 +19,7 @@ namespace BotTrader.DAO
             dao = new DAO();
         }
 
-        internal void Inserir(Orders listaOrders)
+        public void Inserir(Orders listaOrders)
         {
             script = @"
                 IF(SELECT COUNT(*) FROM dbo.tab_bitcoin_trade_order_ask WHERE code = @code) = 0

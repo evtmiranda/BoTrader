@@ -3,7 +3,7 @@ using System.Data.SqlClient;
 
 namespace BotTrader.Service
 {
-    internal class Serializacao
+    public class Serializacao
     {
         public IEnumerable<Dictionary<string, object>> Serializar(SqlDataReader reader)
         {

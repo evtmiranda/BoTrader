@@ -5,16 +5,16 @@ using BotTrader.Service;
 
 namespace BotTrader.Controller
 {
-    internal class Controller
+    public class Controller
     {
         Service.Service service;
 
-        internal Controller()
+        public Controller()
         {
             service = new Service.Service();
         }
 
-        internal void ProcessamentoDados()
+        public void ProcessamentoDados()
         {
             Comunicacao.EscreverNaTela("iniciando aplicação no modo ProcessamentoDados");
 

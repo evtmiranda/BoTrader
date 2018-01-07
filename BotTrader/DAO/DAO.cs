@@ -6,13 +6,13 @@ using BotTrader.Service;
 
 namespace BotTrader.DAO
 {
-    internal class DAO
+    public class DAO
     {
         protected SqlConnection SqlConn { get; set; }
         protected SqlCommand SqlComm { get; set; }
         protected LogDAO LogDAO { get; set; }
 
-        internal DAO()
+        public DAO()
         {
             SqlConn = new SqlConnection(ConfigurationManager.ConnectionStrings["BotTrader"].ToString());
             LogDAO = new LogDAO();
@@ -29,7 +29,7 @@ namespace BotTrader.DAO
             };
         }
 
-        internal void Inserir(string script, SqlParameter[] arrayParametros = null)
+        public void Inserir(string script, SqlParameter[] arrayParametros = null)
         {
             try
             {
@@ -53,7 +53,7 @@ namespace BotTrader.DAO
             }
         }
 
-        internal SqlDataReader Consultar(string script, SqlParameter[] arrayParametros = null)
+        public SqlDataReader Consultar(string script, SqlParameter[] arrayParametros = null)
         {
             try
             {

@@ -20,7 +20,7 @@ namespace BotTrader.DAO
             dao = new DAO();
         }
 
-        internal void Inserir(Trades listaTrades)
+        public void Inserir(Trades listaTrades)
         {
             script = @"
                 IF(SELECT COUNT(*) FROM dbo.tab_bitcoin_trade_trade WHERE active_order_code = @active_order_code AND passive_order_code = @passive_order_code AND date = @date) = 0
@@ -65,9 +65,13 @@ namespace BotTrader.DAO
         /// Consulta os trades de acordo com os filtros enviados e retorna uma lista de trades
         /// </summary>
         /// <param name="dadosConsultaTradeBD">Filtros para consulta de trades</param>
-        internal List<Trade> Consultar(DadosConsultaTradeBD dadosConsultaTradeBD)
+        public List<Trade> Consultar(DadosConsultaTradeBD dadosConsultaTradeBD)
         {
-            script = @"
+            try
+            {
+
+
+                script = @"
                 SELECT
                     [type],
                     amount,
@@ -76,59 +80,143 @@ namespace BotTrader.DAO
                     passive_order_code,
                     [date]
                 FROM dbo.tab_bitcoin_trade_trade
-                WHERE [type] = @type
-                AND [date] BETWEEN @data_inicial AND @data_final";
+                WHERE 1 = 1";
 
-            if (!string.IsNullOrEmpty(dadosConsultaTradeBD.NomeCampoOrdenacao))
-            {
-                if(!string.IsNullOrEmpty(dadosConsultaTradeBD.NomeCampoOrdenacao) && !string.IsNullOrEmpty(dadosConsultaTradeBD.TipoOrdenacao))
+                if (dadosConsultaTradeBD.Tipo != null)
                 {
-                    script += string.Format(" ORDER BY {0} {1}", dadosConsultaTradeBD.NomeCampoOrdenacao, dadosConsultaTradeBD.TipoOrdenacao);
+                    script += " AND [type] = @type";
+                    arrayParametros = new SqlParameter[]
+                    {
+                        new SqlParameter("@type", dadosConsultaTradeBD.Tipo),
+                        new SqlParameter("@data_inicial", dadosConsultaTradeBD.DataInicial),
+                        new SqlParameter("@data_final", dadosConsultaTradeBD.DataFinal)
+                    };
                 }
                 else
                 {
-                    script += string.Format(" ORDER BY {0}", dadosConsultaTradeBD.NomeCampoOrdenacao);
+                    arrayParametros = new SqlParameter[]
+                    {
+                        new SqlParameter("@data_inicial", dadosConsultaTradeBD.DataInicial),
+                        new SqlParameter("@data_final", dadosConsultaTradeBD.DataFinal)
+                    };
                 }
 
-                
+                script += " AND [date] BETWEEN @data_inicial AND @data_final";
+
+                if (!string.IsNullOrEmpty(dadosConsultaTradeBD.NomeCampoOrdenacao))
+                {
+                    if (!string.IsNullOrEmpty(dadosConsultaTradeBD.NomeCampoOrdenacao) && !string.IsNullOrEmpty(dadosConsultaTradeBD.TipoOrdenacao))
+                    {
+                        script += string.Format(" ORDER BY {0} {1}", dadosConsultaTradeBD.NomeCampoOrdenacao, dadosConsultaTradeBD.TipoOrdenacao);
+                    }
+                    else
+                    {
+                        script += string.Format(" ORDER BY {0}", dadosConsultaTradeBD.NomeCampoOrdenacao);
+                    }
+                }
+
+                dataReader = dao.Consultar(script, arrayParametros);
+
+                if (!dataReader.HasRows)
+                    return null;
+
+                var r = new Serializacao().Serializar(dataReader);
+                string json = JsonConvert.SerializeObject(r, Formatting.None);
+
+                List<Trade> listaTrade = JsonConvert.DeserializeObject<List<Trade>>(json);
+
+                return listaTrade;
+            }
+            finally
+            {
+                dataReader.Close();
             }
 
-            arrayParametros = new SqlParameter[]
-            {
-                new SqlParameter("@type", dadosConsultaTradeBD.Tipo),
-                new SqlParameter("@data_inicial", dadosConsultaTradeBD.DataInicial),
-                new SqlParameter("@data_final", dadosConsultaTradeBD.DataFinal)
-            };
-
-            dataReader = dao.Consultar(script, arrayParametros);
-
-            var r = new Serializacao().Serializar(dataReader);
-            //string json = JsonConvert.SerializeObject(r, Formatting.None).Replace("[", "").Replace("]", "");
-            string json = JsonConvert.SerializeObject(r, Formatting.None);
-
-            List<Trade> trades = JsonConvert.DeserializeObject<List<Trade>>(json);
-
-            dataReader.Close();
-
-            return trades;
         }
 
-        internal string ConsultarUltimaDataProcessamento()
+        public string ConsultarUltimaDataProcessamento()
         {
-            script = @"SELECT COALESCE(FORMAT(MAX(date), 'yyyy-MM-ddTHH:mm:ss-00:00'), '2017-01-01T00:00:00-00:00') as data FROM dbo.tab_bitcoin_trade_trade;";
+            try
+            {
+                script = @"SELECT COALESCE(FORMAT(MAX(date), 'yyyy-MM-ddTHH:mm:ss-00:00'), '2017-01-01T00:00:00-00:00') as data FROM dbo.tab_bitcoin_trade_trade;";
 
-            dataReader = dao.Consultar(script);
+                dataReader = dao.Consultar(script);
 
-            var r = new Serializacao().Serializar(dataReader);
-            string json = JsonConvert.SerializeObject(r, Formatting.None);
+                var r = new Serializacao().Serializar(dataReader);
+                string json = JsonConvert.SerializeObject(r, Formatting.None);
 
-            DataUltimoProcessamento maiorData = JsonConvert.DeserializeObject<List<DataUltimoProcessamento>>(json).First();
+                DadosDataUltimoProcessamento maiorData = JsonConvert.DeserializeObject<List<DadosDataUltimoProcessamento>>(json).First();
 
-            dataReader.Close();
+                return maiorData.data;
+            }
+            finally
+            {
+                dataReader.Close();
+            }
 
-            return maiorData.data;
         }
 
+        public DadosUltimoValorVenda ConsultarUltimoValorVenda()
+        {
+            try
+            {
+                script = @"
+                SELECT TOP 1
+	                vlr_venda
+                FROM dbo.tab_trade_venda
+                ORDER BY
+	                dat_registro DESC";
+
+                dataReader = dao.Consultar(script);
+
+                if (!dataReader.HasRows)
+                {
+                    Comunicacao.EnviarMensagem("a tabela dbo.tab_trade_venda não possui histórico de negociação.");
+                    return null;
+                }
+
+                var r = new Serializacao().Serializar(dataReader);
+                string json = JsonConvert.SerializeObject(r, Formatting.None);
+
+                return JsonConvert.DeserializeObject<List<DadosUltimoValorVenda>>(json).First();
+            }
+            finally
+            {
+                dataReader.Close();
+            }
+
+        }
+
+        public DadosUltimoValorCompra ConsultarUltimoValorCompra()
+        {
+            try
+            {
+                script = @"
+                SELECT TOP 1
+	                vlr_compra
+                FROM dbo.tab_trade_compra
+                ORDER BY
+	                dat_registro DESC";
+
+                dataReader = dao.Consultar(script);
+
+                if (!dataReader.HasRows)
+                {
+                    Comunicacao.EnviarMensagem("a tabela dbo.tab_trade_compra não possui histórico de negociação.");
+                    return null;
+                }
+
+                var r = new Serializacao().Serializar(dataReader);
+                string json = JsonConvert.SerializeObject(r, Formatting.None);
+
+                return JsonConvert.DeserializeObject<List<DadosUltimoValorCompra>>(json).First();
+            }
+            finally
+            {
+                dataReader.Close();
+            }
+
+        }
 
     }
 }

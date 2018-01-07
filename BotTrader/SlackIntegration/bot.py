@@ -9,5 +9,5 @@ sc = SlackClient(slack_token)
 sc.api_call(
 	"chat.postMessage",
 	channel="#trader",
-	text="Hello from Python! :tada:" + message
+	text=message
 )

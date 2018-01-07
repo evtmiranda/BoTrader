@@ -2,39 +2,54 @@
 using System.Collections.Generic;
 using System.Linq;
 using BotTrader.DAO;
+using BotTrader.Model.Ticker;
 using BotTrader.Model.Trades;
 using static BotTrader.Model.Matematica;
 
 namespace BotTrader.Service
 {
-    internal class Matematica
+    public class Matematica
     {
         TradesDAO tradesDAO;
+        TickerDAO tickerDAO;
 
-        internal Matematica()
+        public Matematica()
         {
             tradesDAO = new TradesDAO();
+            tickerDAO = new TickerDAO();
         }
+
+        #region análise compra
 
         /// <summary>
         /// Análises para identificar se existe insights ou alertas para comprar
         /// </summary>
-        internal void AnalisarCompra()
+        public DadosAnaliseCompra AnalisarCompra()
         {
-            AnalisarCrescimentoValorCompraEQuantidadeCompras();
-            AnalisarSeHouveQuedaContinuaEVoltouASubir();
-            AnalisarValorCompraAbaixoValorUltimaVenda();
+            decimal percentualMedioCrescimentoValorCompraUltimas3Horas = CalcularPercentualMedioCrescimentoValorCompra();
+            decimal percentualCrescimentoValorCompraEmRelacaoValorUltimaVenda = CompararValorCompraXValorUltimaVenda();
+            decimal percentualCrescimentoQtdComprasUltimaHora = CalcularCrescimentoQuantidadeCompraUltimaHora();
+            decimal percentualCrescimentoQtdTradesUltimaHora = CalcularCrescimentoQtdTradesUltimaHora();
 
-            AnalisarQuantidadeCompraAcimaMedia();
+            return new DadosAnaliseCompra()
+            {
+                PercentualMedioCrescimentoValorCompraUltimas3Horas = percentualMedioCrescimentoValorCompraUltimas3Horas,
+                PercentualCrescimentoQtdComprasUltimaHora = percentualCrescimentoQtdComprasUltimaHora,
+                PercentualCrescimentoValorCompraEmRelacaoValorUltimaVenda = percentualCrescimentoValorCompraEmRelacaoValorUltimaVenda,
+                PercentualCrescimentoQtdTradesUltimaHora = percentualCrescimentoQtdTradesUltimaHora
+            };
+
+            //TODO: implementar os métodos abaixo
+            //AnalisarSeHouveQuedaContinuaEVoltouASubir();
         }
 
-        /// <summary>
-        /// Análise para identificar se o valor de compra está em uma crescente contínua e tem muita gente comprando
-        /// </summary>
-        private ResultadoAnalisaCrescimentoValorCompraEQuantidadeCompras AnalisarCrescimentoValorCompraEQuantidadeCompras()
-        {
-            #region Análise variação
 
+
+        /// <summary>
+        /// Calcula o percentual médio de crescimento do valor de compra nas últimas 3 horas
+        /// </summary>
+        private decimal CalcularPercentualMedioCrescimentoValorCompra()
+        {
             DadosConsultaTradeBD dadosConsultaTradeBD = new DadosConsultaTradeBD()
             {
                 Tipo = "buy",
@@ -58,7 +73,6 @@ namespace BotTrader.Service
                     valorTradeAnterior = trade.unit_price;
                 }
                     
-
                 variacaoComparacaoUltimoTrade = (trade.unit_price / valorTradeAnterior) - 1;
 
                 valorTradeAnterior = trade.unit_price;
@@ -66,33 +80,9 @@ namespace BotTrader.Service
                 listaVariacao.Add(variacaoComparacaoUltimoTrade);
             }
 
-            decimal variacaoMedia = listaVariacao.Average();
+            decimal percentualMedioCrescimentoValorCompra = listaVariacao.Average();
 
-            #endregion
-
-            #region Análise qtd de compras
-
-            //Verifica se a quantidade de compras na última hora está muito acima da hora anterior
-            List<Trade> listaTradeQtdCompra = listaTradeVariacao;
-
-            var listaTradeQtdCompraAgrupada = listaTradeQtdCompra
-            .GroupBy(u => u.date.ToString("HH"))
-            .Select(grp => grp.ToList())
-            .ToList();
-
-            decimal crescimentoQtdCompra;
-
-            int indiceInicial = listaTradeQtdCompraAgrupada.Count == 4 ? 2 : 1;
-
-            crescimentoQtdCompra = (Convert.ToDecimal(listaTradeQtdCompraAgrupada[indiceInicial].Count) / Convert.ToDecimal(listaTradeQtdCompraAgrupada[indiceInicial-1].Count)) - 1;
-
-            #endregion
-
-            return new ResultadoAnalisaCrescimentoValorCompraEQuantidadeCompras()
-            {
-                CrescimentoQtdCompra = crescimentoQtdCompra,
-                VariacaoMediaCrescimento = variacaoMedia
-            };
+            return percentualMedioCrescimentoValorCompra;
         }
 
         /// <summary>
@@ -104,43 +94,181 @@ namespace BotTrader.Service
         }
 
         /// <summary>
-        /// Análise para identificar se o valor de compra está X % abaixo do valor da última venda
+        /// Compara o valor de compra atual com o valor da última venda e devolve a diferença percentual do valor de compra.
+        /// Quando a diferença percentual é negativa, significa que o valor para compra está abaixo do valor da última venda
         /// </summary>
-        private void AnalisarValorCompraAbaixoValorUltimaVenda()
+        private decimal CompararValorCompraXValorUltimaVenda()
         {
-            throw new NotImplementedException();
+            DadosConsultaTickerBD dadosConsultaTickerBD = new DadosConsultaTickerBD()
+            {
+                QtdRegistros = 1,
+                NomeCampoOrdenacao = "date",
+                TipoOrdenacao = "DESC"
+            };
+
+            Ticker ticker = tickerDAO.Consultar(dadosConsultaTickerBD).First();
+
+            DadosUltimoValorVenda ultimoValorVenda = tradesDAO.ConsultarUltimoValorVenda();
+
+            if (ultimoValorVenda == null)
+                return Convert.ToDecimal(0);
+
+            decimal valorCompraAtual = ticker.data.sell;
+            decimal valorUltimaVenda = ultimoValorVenda.vlr_venda;
+
+            decimal diferencaValorCompra = valorCompraAtual - valorUltimaVenda;
+            decimal diferencaValorCompraPercentual = diferencaValorCompra / valorUltimaVenda;
+
+            return diferencaValorCompraPercentual;
         }
 
         /// <summary>
-        /// Análise para identificar se a quantidade de compra está X % acima da média de um determinado período
+        /// Calcula o percentual de crescimento da quantidade de compras da última hora
         /// </summary>
-        private void AnalisarQuantidadeCompraAcimaMedia()
+        private decimal CalcularCrescimentoQuantidadeCompraUltimaHora()
         {
-            throw new NotImplementedException();
+            int qtdHorasAnalise = -2;
+            int qtdHorasAnalisePositivo = qtdHorasAnalise * -1;
+
+            DadosConsultaTradeBD dadosConsultaTradeBD = new DadosConsultaTradeBD()
+            {
+                Tipo = "buy",
+                DataInicial = DateTime.Now.AddHours(qtdHorasAnalise).ToString("yyyyMMdd HH:mm:ss"),
+                DataFinal = DateTime.Now.ToString("yyyyMMdd HH:mm:ss"),
+                NomeCampoOrdenacao = "cod_bitcoin_trade_trade",
+                TipoOrdenacao = "ASC"
+            };
+
+            List<Trade> listaTrade = tradesDAO.Consultar(dadosConsultaTradeBD);
+
+            List<Trade> listaTradeQtdCompra = listaTrade;
+
+            var listaTradeQtdCompraAgrupada = listaTradeQtdCompra
+            .GroupBy(u => u.date.ToString("HH"))
+            .Select(grp => grp.ToList())
+            .ToList();
+
+            int indiceInicial = listaTradeQtdCompraAgrupada.Count == (qtdHorasAnalisePositivo + 1) ? qtdHorasAnalisePositivo -1 : qtdHorasAnalisePositivo;
+
+            decimal crescimentoQuantidadeCompraUltimaHora = (Convert.ToDecimal(listaTradeQtdCompraAgrupada[indiceInicial].Count) / Convert.ToDecimal(listaTradeQtdCompraAgrupada[indiceInicial - 1].Count)) - 1;
+
+            return crescimentoQuantidadeCompraUltimaHora;
         }
+
+        private decimal CalcularCrescimentoQtdTradesUltimaHora()
+        {
+            int qtdHorasAnalise = -2;
+            int qtdHorasAnalisePositivo = qtdHorasAnalise * -1;
+
+            DadosConsultaTradeBD dadosConsultaTradeBD = new DadosConsultaTradeBD()
+            {
+                DataInicial = DateTime.Now.AddHours(qtdHorasAnalise).ToString("yyyyMMdd HH:mm:ss"),
+                DataFinal = DateTime.Now.ToString("yyyyMMdd HH:mm:ss"),
+                NomeCampoOrdenacao = "cod_bitcoin_trade_trade",
+                TipoOrdenacao = "ASC"
+            };
+
+            List<Trade> listaTrade = tradesDAO.Consultar(dadosConsultaTradeBD);
+
+            List<Trade> listaTradeQtdCompra = listaTrade;
+
+            var listaTradeQtdCompraAgrupada = listaTradeQtdCompra
+            .GroupBy(u => u.date.ToString("HH"))
+            .Select(grp => grp.ToList())
+            .ToList();
+
+            int indiceInicial = listaTradeQtdCompraAgrupada.Count == (qtdHorasAnalisePositivo + 1) ? qtdHorasAnalisePositivo - 1 : qtdHorasAnalisePositivo;
+
+            decimal crescimentoQuantidadeCompraUltimaHora = (Convert.ToDecimal(listaTradeQtdCompraAgrupada[indiceInicial].Count) / Convert.ToDecimal(listaTradeQtdCompraAgrupada[indiceInicial - 1].Count)) - 1;
+
+            return crescimentoQuantidadeCompraUltimaHora;
+        }
+
+        #endregion
+
+        #region análise venda
 
         /// <summary>
         /// Análises para identificar se existe insights ou alertas para vender
         /// </summary>
-        internal void AnalisarVenda()
+        public DadosAnaliseVenda AnalisarVenda()
         {
-            AnalisarValorVendaAcimaValorUltimaCompra();
-            AnalisarQuantidadeVendaAcimaMedia();
+            decimal percentualGanhoVenda = CompararValorVendaXValorUltimaCompra();
+            decimal percentualCrescimentoQtdVendas = CalcularCrescimentoQuantidadeVendaUltimaHora();
+            decimal percentualCrescimentoQtdTradesUltimaHora = CalcularCrescimentoQtdTradesUltimaHora();
 
-        }
-
-        private void AnalisarValorVendaAcimaValorUltimaCompra()
-        {
-            throw new NotImplementedException();
+            return new DadosAnaliseVenda()
+            {
+                PercentualCrescimentoQtdVendasUltimaHora = percentualCrescimentoQtdVendas,
+                PercentualGanhoVenda = percentualGanhoVenda,
+                PercentualCrescimentoQtdTradesUltimaHora = percentualCrescimentoQtdTradesUltimaHora
+            };
         }
 
         /// <summary>
-        /// Análise para identificar se a quantidade de venda está X % acima da média de um determinado período
+        /// Compara o valor de venda atual com o valor da última compra e devolve a diferença percentual do valor de venda.
+        /// Quando a diferença percentual é positiva, significa que o valor para venda está acima do valor da última compra
         /// </summary>
-        private void AnalisarQuantidadeVendaAcimaMedia()
+        /// <returns></returns>
+        private decimal CompararValorVendaXValorUltimaCompra()
         {
-            throw new NotImplementedException();
+            DadosConsultaTickerBD dadosConsultaTickerBD = new DadosConsultaTickerBD()
+            {
+                QtdRegistros = 1,
+                NomeCampoOrdenacao = "date",
+                TipoOrdenacao = "DESC"
+            };
+
+            Ticker ticker = tickerDAO.Consultar(dadosConsultaTickerBD).First();
+
+            DadosUltimoValorCompra ultimoValorCompra = tradesDAO.ConsultarUltimoValorCompra();
+
+            if(ultimoValorCompra == null)
+                return Convert.ToDecimal(0);
+
+            decimal valorVendaAtual = ticker.data.buy;
+            decimal valorUltimaCompra = ultimoValorCompra.vlr_compra;
+
+            decimal diferencaValorVenda = valorVendaAtual - valorUltimaCompra;
+            decimal diferencaValorVendaPercentual = diferencaValorVenda / valorUltimaCompra;
+
+            return diferencaValorVendaPercentual;
         }
+
+        /// <summary>
+        /// Calcula o percentual de crescimento da quantidade de vendas da última hora
+        /// </summary>
+        private decimal CalcularCrescimentoQuantidadeVendaUltimaHora()
+        {
+            int qtdHorasAnalise = -2;
+            int qtdHorasAnalisePositivo = qtdHorasAnalise * -1;
+
+            DadosConsultaTradeBD dadosConsultaTradeBD = new DadosConsultaTradeBD()
+            {
+                Tipo = "sell",
+                DataInicial = DateTime.Now.AddHours(qtdHorasAnalise).ToString("yyyyMMdd HH:mm:ss"),
+                DataFinal = DateTime.Now.ToString("yyyyMMdd HH:mm:ss"),
+                NomeCampoOrdenacao = "cod_bitcoin_trade_trade",
+                TipoOrdenacao = "ASC"
+            };
+
+            List<Trade> listaTrade = tradesDAO.Consultar(dadosConsultaTradeBD);
+
+            List<Trade> listaTradeQtdVenda = listaTrade;
+
+            var listaTradeQtdVendaAgrupada = listaTradeQtdVenda
+            .GroupBy(u => u.date.ToString("HH"))
+            .Select(grp => grp.ToList())
+            .ToList();
+
+            int indiceInicial = listaTradeQtdVenda.Count == (qtdHorasAnalisePositivo + 1) ? qtdHorasAnalisePositivo - 1 : qtdHorasAnalisePositivo;
+
+            decimal crescimentoQuantidadeVendaUltimaHora = (Convert.ToDecimal(listaTradeQtdVendaAgrupada[indiceInicial].Count) / Convert.ToDecimal(listaTradeQtdVendaAgrupada[indiceInicial - 1].Count)) - 1;
+
+            return crescimentoQuantidadeVendaUltimaHora;
+        }
+
+        #endregion
 
         private decimal CalcularVariacao(decimal a, decimal b)
         {

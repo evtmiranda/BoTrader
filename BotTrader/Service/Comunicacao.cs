@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace BotTrader.Service
 {
-    internal class Comunicacao
+    public class Comunicacao
     {
-        internal static void EnviarMensagem(string message)
+        public static void EnviarMensagem(string message)
         {
             string messageLocal = DateTime.UtcNow.ToLocalTime() + " " + message;
 
@@ -16,7 +16,7 @@ namespace BotTrader.Service
             EnviarMensagemSlack(messageLocal);
         }
 
-        internal static void EscreverNaTela(string mensagem)
+        public static void EscreverNaTela(string mensagem)
         {
             string mensagemLocal = DateTime.UtcNow.ToLocalTime() + " " + mensagem;
             Console.WriteLine(mensagemLocal);

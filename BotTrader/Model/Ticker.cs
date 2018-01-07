@@ -50,4 +50,32 @@ namespace BotTrader.Model.Ticker
         public Data data { get; set; }
     }
 
+    public class DadosConsultaTickerBD
+    {
+        /// <summary>
+        /// Quantidade de registros
+        /// </summary>
+        public int QtdRegistros { get; set; }
+
+        /// <summary>
+        /// Formato: yyyyMMdd HH:mm:ss
+        /// </summary>
+        public string DataInicial { get; set; }
+
+        /// <summary>
+        /// Formato: yyyyMMdd HH:mm:ss
+        /// </summary>
+        public string DataFinal { get; set; }
+
+        /// <summary>
+        /// Nome do campo para ordenação de
+        /// </summary>
+        public string NomeCampoOrdenacao { get; set; }
+
+        /// <summary>
+        /// ASC ou DESC
+        /// </summary>
+        public string TipoOrdenacao { get; set; }
+    }
+
 }

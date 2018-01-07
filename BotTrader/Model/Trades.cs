@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using static BotTrader.Model.Matematica;
 
 namespace BotTrader.Model.Trades
 {
@@ -54,9 +55,34 @@ namespace BotTrader.Model.Trades
         public int NumeroPagina { get; set; }
     }
 
-    public class DataUltimoProcessamento
+    public class DadosDataUltimoProcessamento
     {
         public string data { get; set; }
+    }
+
+    public class DadosUltimoValorVenda
+    {
+        public decimal vlr_venda { get; set; }
+    }
+
+    public class DadosUltimoValorCompra
+    {
+        public decimal vlr_compra { get; set; }
+    }
+
+    public class DadosAnaliseCompra
+    {
+        public decimal PercentualMedioCrescimentoValorCompraUltimas3Horas { get; set; }
+        public decimal PercentualCrescimentoValorCompraEmRelacaoValorUltimaVenda { get; set; }
+        public decimal PercentualCrescimentoQtdComprasUltimaHora { get; set; }
+        public decimal PercentualCrescimentoQtdTradesUltimaHora { get; set; }
+    }
+
+    public class DadosAnaliseVenda
+    {
+        public decimal PercentualGanhoVenda { get; set; }
+        public decimal PercentualCrescimentoQtdVendasUltimaHora { get; set; }
+        public decimal PercentualCrescimentoQtdTradesUltimaHora { get; set; }
     }
 
     public class DadosConsultaTradeBD

@@ -41,7 +41,7 @@ namespace BotTrader.Service
         {
             //TODO: Repositório com exemplos em C#: https://github.com/TelegramBots/telegram.bot.examples
 
-            var botClient = new Telegram.Bot.TelegramBotClient("64099364b969471dfa57590d2305f000");
+            var botClient = new Telegram.Bot.TelegramBotClient("");
             var me = await botClient.GetMeAsync();
             Console.WriteLine($"Hello! My name is {me.FirstName}");
         }

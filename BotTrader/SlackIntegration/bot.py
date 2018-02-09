@@ -3,7 +3,7 @@ import sys
 
 message = sys.argv[1]
 
-slack_token = 'xoxb-293848887825-1yRvDAVDq2WW0lKxYzcUVfBG'
+slack_token = ''
 sc = SlackClient(slack_token)
 
 sc.api_call(

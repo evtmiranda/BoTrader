@@ -176,7 +176,8 @@ namespace BotTrader.Service
             .Select(grp => grp.ToList())
             .ToList();
 
-            int indiceInicial = listaTradeQtdCompraAgrupada.Count == (qtdHorasAnalisePositivo + 1) ? qtdHorasAnalisePositivo - 1 : qtdHorasAnalisePositivo;
+            //int indiceInicial = listaTradeQtdCompraAgrupada.Count == (qtdHorasAnalisePositivo + 1) ? qtdHorasAnalisePositivo - 1 : qtdHorasAnalisePositivo;
+            int indiceInicial = qtdHorasAnalisePositivo-1;
 
             decimal crescimentoQuantidadeCompraUltimaHora = (Convert.ToDecimal(listaTradeQtdCompraAgrupada[indiceInicial].Count) / Convert.ToDecimal(listaTradeQtdCompraAgrupada[indiceInicial - 1].Count)) - 1;
 
@@ -264,7 +265,8 @@ namespace BotTrader.Service
             .Select(grp => grp.ToList())
             .ToList();
 
-            int indiceInicial = listaTradeQtdVendaAgrupada.Count == (qtdHorasAnalisePositivo + 1) ? qtdHorasAnalisePositivo - 1 : qtdHorasAnalisePositivo;
+            //int indiceInicial = listaTradeQtdVendaAgrupada.Count == (qtdHorasAnalisePositivo + 1) ? qtdHorasAnalisePositivo - 1 : qtdHorasAnalisePositivo;
+            int indiceInicial = qtdHorasAnalisePositivo - 1;
 
             decimal crescimentoQuantidadeVendaUltimaHora = (Convert.ToDecimal(listaTradeQtdVendaAgrupada[indiceInicial].Count) / Convert.ToDecimal(listaTradeQtdVendaAgrupada[indiceInicial - 1].Count)) - 1;
 
